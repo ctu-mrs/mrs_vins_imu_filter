@@ -2,31 +2,25 @@
 accelerometer:
   iir_filter:
     enable: true
-    # # butterworth low-pass, 1st order, 62.5 Hz sampling frequency, 10 Hz cutoff frequency
-    a: [1.0, -0.2905]
-    b: [0.3547, 0.3547]
-    # # butterworth low-pass, 2nd order, 62.5 Hz sampling frequency, 10 Hz cutoff frequency
-    # a: [1.000000000000000, -0.671029090774096, 0.252324626282266]
-    # b: [0.145323883877042, 0.290647767754085, 0.145323883877042]
-    # butterworth low-pass, 3rd order, 62.5 Hz sampling frequency, 5 Hz cutoff frequency
-    # a: [1.000000000000000, -2.003797477370017, 1.447054019489380, -0.361795928227867]
-    # b: [0.010182576736437, 0.030547730209311, 0.030547730209311, 0.010182576736437]
+    # # butterworth low-pass, 1st order, 400 Hz sampling frequency, 10 Hz cutoff frequency
+    a: [1.0, -0.8541]
+    b: [0.073, 0.073]
 
   notch_filter:
-    enable: false
-    sample_rate: 1000 # [Hz]
-    frequencies: [100, 200, 300] # [Hz]
+    enable: true
+    sample_rate: 400 # [Hz]
+    frequencies: [100, 200] # [Hz]
     bandwidth: 100 # [Hz]
 
 gyro:
   iir_filter:
     enable: true
-    # butterworth low-pass, 1st order, 200 Hz sampling frequency, 10 Hz cutoff frequency
-    a: [1.0, -0.7265]
-    b: [0.1367, 0.1367]
+    # # butterworth low-pass, 1st order, 400 Hz sampling frequency, 10 Hz cutoff frequency
+    a: [1.0, -0.8541]
+    b: [0.073, 0.073]
 
   notch_filter:
-    enable: false
-    sample_rate: 1000 # [Hz]
-    frequencies: [100, 200, 300] # [Hz]
+    enable: true
+    sample_rate: 400 # [Hz]
+    frequencies: [100, 200] # [Hz]
     bandwidth: 100 # [Hz]
