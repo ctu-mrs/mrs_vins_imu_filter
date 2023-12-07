@@ -9,8 +9,8 @@ accelerometer:
   notch_filter:
     enable: true
     sample_rate: 400 # [Hz]
-    frequencies: [100, 200] # [Hz]
-    bandwidth: 100 # [Hz]
+    frequencies: [55, 115, 167] # [Hz]
+    bandwidth: 50 # [Hz]
 
 gyro:
   iir_filter:
@@ -22,5 +22,5 @@ gyro:
   notch_filter:
     enable: true
     sample_rate: 400 # [Hz]
-    frequencies: [100, 200] # [Hz]
-    bandwidth: 100 # [Hz]
+    frequencies: [55, 115, 167] # [Hz]
+    bandwidth: 50 # [Hz]
