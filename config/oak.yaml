@@ -6,6 +6,22 @@ accelerometer:
     a: [1.0, -0.8541]
     b: [0.073, 0.073]
 
+    # # butterworth low-pass, 2nd order, 400 Hz sampling frequency, 10 Hz cutoff frequency
+    # a: [1.0, -1.7786, 0.8008]
+    # b: [0.0055, 0.0111, 0.0055]
+
+    # # butterworth low-pass, 3rd order, 400 Hz sampling frequency, 10 Hz cutoff frequency
+    # a: [1.0, -2.6862, 2.4197, -0.7302]
+    # b: [0.00041654, 0.001249638, 0.001249638, 0.00041654]
+
+    # # butterworth low-pass, 3rd order, 400 Hz sampling frequency, 5 Hz cutoff frequency
+    # a: [1.0, -2.8430, 2.6980, -0.8546]
+    # b: [0.00005607011, 0.0001682103448, 0.0001682103448, 0.00005607011]
+    
+    # butterworth low-pass, 3rd order, 400 Hz sampling frequency, 20 Hz cutoff frequency
+    # a: [1.0, -2.3741, 1.9294, -0.5321]
+    # b: [0.00289819463, 0.00869458390116, 0.00869458390116, 0.00289819463]
+
   notch_filter:
     enable: true
     sample_rate: 400 # [Hz]
@@ -18,6 +34,22 @@ gyro:
     # # butterworth low-pass, 1st order, 400 Hz sampling frequency, 10 Hz cutoff frequency
     a: [1.0, -0.8541]
     b: [0.073, 0.073]
+
+    # # butterworth low-pass, 2nd order, 400 Hz sampling frequency, 10 Hz cutoff frequency
+    # a: [1.0, -1.7786, 0.8008]
+    # b: [0.0055, 0.0111, 0.0055]
+
+    # # butterworth low-pass, 3rd order, 400 Hz sampling frequency, 10 Hz cutoff frequency
+    # a: [1.0, -2.6862, 2.4197, -0.7302]
+    # b: [0.00041654, 0.001249638, 0.001249638, 0.00041654]
+
+    # # butterworth low-pass, 3rd order, 400 Hz sampling frequency, 5 Hz cutoff frequency
+    # a: [1.0, -2.8430, 2.6980, -0.8546]
+    # b: [0.00005607011, 0.0001682103448, 0.0001682103448, 0.00005607011]
+    
+    # butterworth low-pass, 3rd order, 400 Hz sampling frequency, 20 Hz cutoff frequency
+    # a: [1.0, -2.3741, 1.9294, -0.5321]
+    # b: [0.00289819463, 0.00869458390116, 0.00869458390116, 0.00289819463]
 
   notch_filter:
     enable: true
