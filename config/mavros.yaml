@@ -1,0 +1,26 @@
+
+accelerometer:
+  iir_filter:
+    enable: true
+    # # butterworth low-pass, 1st order, 100 Hz sampling frequency, 10 Hz cutoff frequency
+    a: [1.0, -0.5095]
+    b: [0.2452, 0.2452]
+
+  notch_filter:
+    enable: false
+    sample_rate: 400 # [Hz]
+    frequencies: [55, 115, 167] # [Hz]
+    bandwidth: 50 # [Hz]
+
+gyro:
+  iir_filter:
+    enable: true
+    # # butterworth low-pass, 1st order, 100 Hz sampling frequency, 10 Hz cutoff frequency
+    a: [1.0, -0.5095]
+    b: [0.2452, 0.2452]
+
+  notch_filter:
+    enable: false
+    sample_rate: 400 # [Hz]
+    frequencies: [55, 115, 167] # [Hz]
+    bandwidth: 50 # [Hz]

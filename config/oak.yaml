@@ -23,7 +23,7 @@ accelerometer:
     # b: [0.00289819463, 0.00869458390116, 0.00869458390116, 0.00289819463]
 
   notch_filter:
-    enable: true
+    enable: false
     sample_rate: 400 # [Hz]
     frequencies: [55, 115, 167] # [Hz]
     bandwidth: 50 # [Hz]
@@ -52,7 +52,7 @@ gyro:
     # b: [0.00289819463, 0.00869458390116, 0.00869458390116, 0.00289819463]
 
   notch_filter:
-    enable: true
+    enable: false
     sample_rate: 400 # [Hz]
     frequencies: [55, 115, 167] # [Hz]
     bandwidth: 50 # [Hz]
