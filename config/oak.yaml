@@ -2,9 +2,13 @@
 accelerometer:
   iir_filter:
     enable: true
-    # # butterworth low-pass, 1st order, 400 Hz sampling frequency, 10 Hz cutoff frequency
-    a: [1.0, -0.8541]
-    b: [0.073, 0.073]
+    # # # butterworth low-pass, 1st order, 400 Hz sampling frequency, 10 Hz cutoff frequency
+    # a: [1.0, -0.8541]
+    # b: [0.073, 0.073]
+
+    # # butterworth low-pass, 1st order, 200 Hz sampling frequency, 10 Hz cutoff frequency
+    a: [1.0, -0.7265]
+    b: [0.1367, 0.1367]
 
     # # butterworth low-pass, 2nd order, 400 Hz sampling frequency, 10 Hz cutoff frequency
     # a: [1.0, -1.7786, 0.8008]
@@ -31,9 +35,13 @@ accelerometer:
 gyro:
   iir_filter:
     enable: true
-    # # butterworth low-pass, 1st order, 400 Hz sampling frequency, 10 Hz cutoff frequency
-    a: [1.0, -0.8541]
-    b: [0.073, 0.073]
+    # # # butterworth low-pass, 1st order, 400 Hz sampling frequency, 10 Hz cutoff frequency
+    # a: [1.0, -0.8541]
+    # b: [0.073, 0.073]
+
+    # # butterworth low-pass, 1st order, 200 Hz sampling frequency, 10 Hz cutoff frequency
+    a: [1.0, -0.7265]
+    b: [0.1367, 0.1367]
 
     # # butterworth low-pass, 2nd order, 400 Hz sampling frequency, 10 Hz cutoff frequency
     # a: [1.0, -1.7786, 0.8008]
