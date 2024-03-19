@@ -76,6 +76,9 @@ private:
   Eigen::MatrixXd _gyro_notch_filter_frequencies_;
   double          _gyro_notch_filter_bandwidth_;
 
+  bool        _change_frame_id_enabled_ = false;
+  std::string _target_frame_id_;
+
   // | ------------------------ callbacks ----------------------- |
   ros::Subscriber subscriber_imu_;
   ros::Subscriber subscriber_accel_;
@@ -137,6 +140,11 @@ void VinsImuFilter::onInit() {
   param_loader.loadParam("gyro/notch_filter/sample_rate", _gyro_notch_filter_sampling_rate_);
   param_loader.loadMatrixDynamic("gyro/notch_filter/frequencies", _gyro_notch_filter_frequencies_, 1, -1);
   param_loader.loadParam("gyro/notch_filter/bandwidth", _gyro_notch_filter_bandwidth_);
+
+  param_loader.loadParam("change_frame_id/enabled", _change_frame_id_enabled_, false);
+  if (_change_frame_id_enabled_) {
+    param_loader.loadParam("change_frame_id/target_frame_id", _target_frame_id_);
+  }
 
   if (!param_loader.loadedSuccessfully()) {
     ROS_ERROR("[%s]: parameter loading failure", node_name.c_str());
@@ -205,12 +213,16 @@ void VinsImuFilter::imuCallback(const sensor_msgs::ImuConstPtr &imu) {
 
   imu_received_ = true;
 
-  if(acc_received_ || gyro_received_){
+  if (acc_received_ || gyro_received_) {
     ROS_WARN_THROTTLE(1.0, "[%s]: Receiving IMU messages but also separate acc or gyro messages, check topic remapping.", ros::this_node::getName().c_str());
   }
 
   sensor_msgs::Imu imu_filtered = filterAccelerometer(*imu);
   imu_filtered                  = filterGyro(imu_filtered);
+
+  if (_change_frame_id_enabled_) {
+    imu_filtered.header.frame_id = _target_frame_id_;
+  }
 
 
   ROS_INFO_THROTTLE(1.0, "[%s]: Filtering", ros::this_node::getName().c_str());
@@ -232,6 +244,11 @@ void VinsImuFilter::accelCallback(const sensor_msgs::ImuConstPtr &imu) {
 
   // copy mode - filter incoming accelerometer data and save it
   sensor_msgs::Imu imu_filtered = filterAccelerometer(*imu);
+
+  if (_change_frame_id_enabled_) {
+    imu_filtered.header.frame_id = _target_frame_id_;
+  }
+
   {
     std::scoped_lock lock(mutex_last_accel_msg_);
     last_accel_msg_ = imu_filtered;
@@ -254,6 +271,10 @@ void VinsImuFilter::gyroCallback(const sensor_msgs::ImuConstPtr &imu) {
 
   // copy mode - filter gyro msg, insert last accel msg into it and publish it
   sensor_msgs::Imu imu_filtered = filterGyro(*imu);
+  
+  if (_change_frame_id_enabled_) {
+    imu_filtered.header.frame_id = _target_frame_id_;
+  }
 
   {
     std::scoped_lock lock(mutex_last_accel_msg_);
