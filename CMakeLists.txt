@@ -1,39 +1,47 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(mrs_vins_imu_filter)
 
-## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++17)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
+set(LIBRARIES 
+  MrsVinsImuFilter_VinsImuFilter
+  )
+
+set(CATKIN_DEPENDENCIES
+  cmake_modules
+  geometry_msgs
+  mrs_lib
+  nav_msgs
+  nodelet
   roscpp
   tf2
   tf2_ros
-  mrs_lib
-  nodelet
+  )
+
+find_package(catkin REQUIRED COMPONENTS
+  ${CATKIN_DEPENDENCIES}
 )
 
 catkin_package(
- LIBRARIES MrsVinsImuFilter
- CATKIN_DEPENDS roscpp tf2 tf2_ros mrs_lib
+  LIBRARIES ${LIBRARIES}
+  CATKIN_DEPENDS ${CATKIN_DEPENDENCIES}
 )
 
 include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
-add_library(MrsVinsImuFilter src/VinsImuFilter.cpp)
+add_library(MrsVinsImuFilter_VinsImuFilter
+  src/VinsImuFilter.cpp
+  )
 
-add_dependencies(MrsVinsImuFilter
+add_dependencies(MrsVinsImuFilter_VinsImuFilter
   ${${PROJECT_NAME}_EXPORTED_TARGETS}
   ${catkin_EXPORTED_TARGETS}
 )
 
-## Specify libraries to link a library or executable target against
-target_link_libraries(MrsVinsImuFilter
+target_link_libraries(MrsVinsImuFilter_VinsImuFilter
   ${catkin_LIBRARIES}
 )
 
@@ -51,6 +59,6 @@ install(DIRECTORY config launch
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   )
 
-install(FILES plugins.xml
+install(FILES nodelets.xml
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   )
