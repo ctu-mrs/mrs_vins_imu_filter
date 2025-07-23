@@ -1,34 +1,32 @@
 /* includes //{ */
 
 #include <memory>
-#include <ros/ros.h>
+#include <rclcpp/rclcpp.hpp>
 
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2_ros/transform_broadcaster.h>
 
-#include <geometry_msgs/TransformStamped.h>
-#include <geometry_msgs/PoseWithCovarianceStamped.h>
-#include <geometry_msgs/TwistWithCovarianceStamped.h>
-#include <geometry_msgs/Vector3.h>
-#include <nav_msgs/Odometry.h>
-#include <sensor_msgs/Imu.h>
-#include <std_msgs/String.h>
+#include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/twist_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/vector3.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/imu.hpp>
+#include <std_msgs/msg/string.hpp>
 
-#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 
+#include <mrs_lib/subscriber_handler.h>
+#include <mrs_lib/publisher_handler.h>
 #include <mrs_lib/param_loader.h>
 #include <mrs_lib/transformer.h>
 #include <mrs_lib/mutex.h>
 #include <mrs_lib/attitude_converter.h>
 #include <mrs_lib/msg_extractor.h>
 #include <mrs_lib/iir_filter.h>
-#include <mrs_lib/notch_filter.h>
-
-#include <nodelet/nodelet.h>
-
-#include <pluginlib/class_list_macros.h>
+#include "mrs_lib/notch_filter.h"
 
 //}
 
@@ -51,13 +49,21 @@ struct IirFilterStruct
 
 /* class VinsImuFilter //{ */
 
-class VinsImuFilter : public nodelet::Nodelet {
+class VinsImuFilter : public rclcpp::Node {
 public:
-  virtual void onInit();
+  VinsImuFilter(rclcpp::NodeOptions options);
 
 private:
+  rclcpp::Node::SharedPtr  node_;
+  rclcpp::Clock::SharedPtr clock_;
+
+  rclcpp::TimerBase::SharedPtr timer_preinitialization_;
+  void                         timerPreInitialization();
+
+  void initialize();
+
   /* flags */
-  bool is_initialized_ = false;
+  std::atomic<bool> is_initialized_ = false;
 
   /* ros parameters */
   bool            _acc_iir_filter_enabled_;
@@ -79,21 +85,25 @@ private:
   bool        _change_frame_id_enabled_ = false;
   std::string _target_frame_id_;
 
+  // | ------------------------ subscribers --------------------- |
+
+  mrs_lib::SubscriberHandler<sensor_msgs::msg::Imu> sh_imu_;
+  mrs_lib::SubscriberHandler<sensor_msgs::msg::Imu> sh_accel_;
+  mrs_lib::SubscriberHandler<sensor_msgs::msg::Imu> sh_gyro_;
+
   // | ------------------------ callbacks ----------------------- |
-  ros::Subscriber subscriber_imu_;
-  ros::Subscriber subscriber_accel_;
-  ros::Subscriber subscriber_gyro_;
-  void            imuCallback(const sensor_msgs::ImuConstPtr &imu);
-  void            accelCallback(const sensor_msgs::ImuConstPtr &imu);
-  void            gyroCallback(const sensor_msgs::ImuConstPtr &imu);
 
-  sensor_msgs::Imu filterAccelerometer(const sensor_msgs::Imu &imu);
-  sensor_msgs::Imu filterGyro(const sensor_msgs::Imu &imu);
+  void imuCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
+  void accelCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
+  void gyroCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu);
 
-  ros::Publisher publisher_imu_;
+  sensor_msgs::msg::Imu filterAccelerometer(const sensor_msgs::msg::Imu &imu);
+  sensor_msgs::msg::Imu filterGyro(const sensor_msgs::msg::Imu &imu);
 
-  sensor_msgs::Imu last_accel_msg_;
-  std::mutex       mutex_last_accel_msg_;
+  mrs_lib::PublisherHandler<sensor_msgs::msg::Imu> ph_imu_;
+
+  sensor_msgs::msg::Imu last_accel_msg_;
+  std::mutex            mutex_last_accel_msg_;
 
   std::vector<std::shared_ptr<NotchFilterStruct>> acc_notch_filter_vector_;
   std::vector<std::shared_ptr<NotchFilterStruct>> gyro_notch_filter_vector_;
@@ -108,24 +118,35 @@ private:
 
 //}
 
-/* onInit() //{ */
+/* VinsImuFilter() //{ */
 
-void VinsImuFilter::onInit() {
-  const std::string node_name("VinsImuFilter");
+VinsImuFilter::VinsImuFilter(rclcpp::NodeOptions options) : Node("VinsImuFilter", options) {
+  timer_preinitialization_ = create_wall_timer(std::chrono::duration<double>(1.0), std::bind(&VinsImuFilter::timerPreInitialization, this));
+}
 
-  /* obtain node handle */
-  /* ros::NodeHandle nh("~"); */
-  ros::NodeHandle nh_ = nodelet::Nodelet::getMTPrivateNodeHandle();
+//}
 
-  ROS_INFO("[%s]: Initializing", node_name.c_str());
+/* timerPreInitialization() //{ */
 
-  /* waits for the ROS to publish clock */
-  ros::Time::waitForValid();
+void VinsImuFilter::timerPreInitialization() {
+  node_  = this->shared_from_this();
+  clock_ = node_->get_clock();
+
+  initialize();
+  timer_preinitialization_->cancel();
+}
+
+//}
+
+/* initialize() //{ */
+
+void VinsImuFilter::initialize() {
+  RCLCPP_INFO(node_->get_logger(), "[VinsImuFilter]: Initializing");
 
   // | ---------- loading ros parameters using mrs_lib ---------- |
-  ROS_INFO("[%s]: loading parameters using ParamLoader", node_name.c_str());
+  RCLCPP_INFO(node_->get_logger(), "[VinsImuFilter]: loading parameters using ParamLoader");
 
-  mrs_lib::ParamLoader param_loader(nh_, node_name);
+  mrs_lib::ParamLoader param_loader(node_, "VinsImuFilter");
   param_loader.loadParam("accelerometer/iir_filter/enable", _acc_iir_filter_enabled_);
   param_loader.loadMatrixDynamic("accelerometer/iir_filter/a", _acc_iir_filter_a_, 1, -1);  // -1 indicates the dynamic dimension
   param_loader.loadMatrixDynamic("accelerometer/iir_filter/b", _acc_iir_filter_b_, 1, -1);
@@ -147,19 +168,26 @@ void VinsImuFilter::onInit() {
   }
 
   if (!param_loader.loadedSuccessfully()) {
-    ROS_ERROR("[%s]: parameter loading failure", node_name.c_str());
-    ros::shutdown();
+    RCLCPP_ERROR(node_->get_logger(), "[VinsImuFilter]: parameter loading failure");
+    rclcpp::shutdown();
+    exit(1);
   }
 
   // | ----------------------- subscribers ---------------------- |
 
-  subscriber_imu_   = nh_.subscribe("imu_in", 10, &VinsImuFilter::imuCallback, this, ros::TransportHints().tcpNoDelay());
-  subscriber_accel_ = nh_.subscribe("accel_in", 10, &VinsImuFilter::accelCallback, this, ros::TransportHints().tcpNoDelay());
-  subscriber_gyro_  = nh_.subscribe("gyro_in", 10, &VinsImuFilter::gyroCallback, this, ros::TransportHints().tcpNoDelay());
+  mrs_lib::SubscriberHandlerOptions shopts;
+  shopts.node               = node_;
+  shopts.no_message_timeout = mrs_lib::no_timeout;
+  shopts.threadsafe         = true;
+  shopts.autostart          = true;
+
+  sh_imu_   = mrs_lib::SubscriberHandler<sensor_msgs::msg::Imu>(shopts, "~/imu_in", &VinsImuFilter::imuCallback, this);
+  sh_accel_ = mrs_lib::SubscriberHandler<sensor_msgs::msg::Imu>(shopts, "~/accel_in", &VinsImuFilter::accelCallback, this);
+  sh_gyro_  = mrs_lib::SubscriberHandler<sensor_msgs::msg::Imu>(shopts, "~/gyro_in", &VinsImuFilter::gyroCallback, this);
 
   // | ----------------------- publishers ----------------------- |
 
-  publisher_imu_ = nh_.advertise<sensor_msgs::Imu>("imu_out", 10);
+  ph_imu_ = mrs_lib::PublisherHandler<sensor_msgs::msg::Imu>(node_, "~/imu_out");
 
   // create IIR filters
   std::vector<double> acc_iir_a(_acc_iir_filter_a_.data(), _acc_iir_filter_a_.data() + _acc_iir_filter_a_.size());
@@ -178,34 +206,35 @@ void VinsImuFilter::onInit() {
   for (int i = 0; i < _acc_notch_filter_frequencies_.cols(); i++) {
     std::shared_ptr<NotchFilterStruct> nfs = std::make_shared<NotchFilterStruct>();
     nfs->notch_filter_x =
-        std::make_unique<mrs_lib::NotchFilter>(_acc_notch_filter_sampling_rate_, _acc_notch_filter_frequencies_(i), _acc_notch_filter_bandwidth_);
+      std::make_unique<mrs_lib::NotchFilter>(_acc_notch_filter_sampling_rate_, _acc_notch_filter_frequencies_(i), _acc_notch_filter_bandwidth_);
     nfs->notch_filter_y =
-        std::make_unique<mrs_lib::NotchFilter>(_acc_notch_filter_sampling_rate_, _acc_notch_filter_frequencies_(i), _acc_notch_filter_bandwidth_);
+      std::make_unique<mrs_lib::NotchFilter>(_acc_notch_filter_sampling_rate_, _acc_notch_filter_frequencies_(i), _acc_notch_filter_bandwidth_);
     nfs->notch_filter_z =
-        std::make_unique<mrs_lib::NotchFilter>(_acc_notch_filter_sampling_rate_, _acc_notch_filter_frequencies_(i), _acc_notch_filter_bandwidth_);
+      std::make_unique<mrs_lib::NotchFilter>(_acc_notch_filter_sampling_rate_, _acc_notch_filter_frequencies_(i), _acc_notch_filter_bandwidth_);
     acc_notch_filter_vector_.push_back(nfs);
   }
 
   for (int i = 0; i < _gyro_notch_filter_frequencies_.cols(); i++) {
     std::shared_ptr<NotchFilterStruct> nfs = std::make_shared<NotchFilterStruct>();
     nfs->notch_filter_x =
-        std::make_unique<mrs_lib::NotchFilter>(_gyro_notch_filter_sampling_rate_, _gyro_notch_filter_frequencies_(i), _gyro_notch_filter_bandwidth_);
+      std::make_unique<mrs_lib::NotchFilter>(_gyro_notch_filter_sampling_rate_, _gyro_notch_filter_frequencies_(i), _gyro_notch_filter_bandwidth_);
     nfs->notch_filter_y =
-        std::make_unique<mrs_lib::NotchFilter>(_gyro_notch_filter_sampling_rate_, _gyro_notch_filter_frequencies_(i), _gyro_notch_filter_bandwidth_);
+      std::make_unique<mrs_lib::NotchFilter>(_gyro_notch_filter_sampling_rate_, _gyro_notch_filter_frequencies_(i), _gyro_notch_filter_bandwidth_);
     nfs->notch_filter_z =
-        std::make_unique<mrs_lib::NotchFilter>(_gyro_notch_filter_sampling_rate_, _gyro_notch_filter_frequencies_(i), _gyro_notch_filter_bandwidth_);
+      std::make_unique<mrs_lib::NotchFilter>(_gyro_notch_filter_sampling_rate_, _gyro_notch_filter_frequencies_(i), _gyro_notch_filter_bandwidth_);
     gyro_notch_filter_vector_.push_back(nfs);
   }
 
   is_initialized_ = true;
 
-  ROS_INFO_ONCE("[%s]: initialized", node_name.c_str());
+  RCLCPP_INFO_ONCE(node_->get_logger(), "[VinsImuFilter]: initialized");
 }
+
 //}
 
 /* imuCallback() //{ */
 
-void VinsImuFilter::imuCallback(const sensor_msgs::ImuConstPtr &imu) {
+void VinsImuFilter::imuCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu) {
 
   if (!is_initialized_) {
     return;
@@ -214,27 +243,27 @@ void VinsImuFilter::imuCallback(const sensor_msgs::ImuConstPtr &imu) {
   imu_received_ = true;
 
   if (acc_received_ || gyro_received_) {
-    ROS_WARN_THROTTLE(1.0, "[%s]: Receiving IMU messages but also separate acc or gyro messages, check topic remapping.", ros::this_node::getName().c_str());
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1.0, "[VinsImuFilter]: Receiving IMU messages but also separate acc or gyro messages, check topic remapping.");
   }
 
-  sensor_msgs::Imu imu_filtered = filterAccelerometer(*imu);
-  imu_filtered                  = filterGyro(imu_filtered);
+  sensor_msgs::msg::Imu imu_filtered = filterAccelerometer(*imu);
+  imu_filtered                       = filterGyro(imu_filtered);
 
   if (_change_frame_id_enabled_) {
     imu_filtered.header.frame_id = _target_frame_id_;
   }
 
 
-  ROS_INFO_THROTTLE(1.0, "[%s]: Filtering", ros::this_node::getName().c_str());
+  RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1.0, "[VinsImuFilter]: Filtering");
 
-  publisher_imu_.publish(imu_filtered);
+  ph_imu_.publish(imu_filtered);
 }
 
 //}
 
 /* accelCallback() //{ */
 
-void VinsImuFilter::accelCallback(const sensor_msgs::ImuConstPtr &imu) {
+void VinsImuFilter::accelCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu) {
 
   if (!is_initialized_) {
     return;
@@ -243,7 +272,7 @@ void VinsImuFilter::accelCallback(const sensor_msgs::ImuConstPtr &imu) {
   acc_received_ = true;
 
   // copy mode - filter incoming accelerometer data and save it
-  sensor_msgs::Imu imu_filtered = filterAccelerometer(*imu);
+  sensor_msgs::msg::Imu imu_filtered = filterAccelerometer(*imu);
 
   if (_change_frame_id_enabled_) {
     imu_filtered.header.frame_id = _target_frame_id_;
@@ -254,14 +283,14 @@ void VinsImuFilter::accelCallback(const sensor_msgs::ImuConstPtr &imu) {
     last_accel_msg_ = imu_filtered;
   }
 
-  ROS_INFO_THROTTLE(1.0, "[%s]: Filtering accelerometer msgs", ros::this_node::getName().c_str());
+  RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1.0, "[VinsImuFilter]: Filtering accelerometer msgs");
 }
 
 //}
 
 /* gyroCallback() //{ */
 
-void VinsImuFilter::gyroCallback(const sensor_msgs::ImuConstPtr &imu) {
+void VinsImuFilter::gyroCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu) {
 
   if (!is_initialized_) {
     return;
@@ -270,7 +299,7 @@ void VinsImuFilter::gyroCallback(const sensor_msgs::ImuConstPtr &imu) {
   gyro_received_ = true;
 
   // copy mode - filter gyro msg, insert last accel msg into it and publish it
-  sensor_msgs::Imu imu_filtered = filterGyro(*imu);
+  sensor_msgs::msg::Imu imu_filtered = filterGyro(*imu);
   
   if (_change_frame_id_enabled_) {
     imu_filtered.header.frame_id = _target_frame_id_;
@@ -281,17 +310,17 @@ void VinsImuFilter::gyroCallback(const sensor_msgs::ImuConstPtr &imu) {
     imu_filtered.linear_acceleration = last_accel_msg_.linear_acceleration;
   }
 
-  ROS_INFO_THROTTLE(1.0, "[%s]: Filtering gyro msgs", ros::this_node::getName().c_str());
+  RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1.0, "[VinsImuFilter]: Filtering gyro msgs");
 
-  publisher_imu_.publish(imu_filtered);
+  ph_imu_.publish(imu_filtered);
 }
 
 //}
 
 /* filterAccelerometer() */ /*//{*/
-sensor_msgs::Imu VinsImuFilter::filterAccelerometer(const sensor_msgs::Imu &imu) {
+sensor_msgs::msg::Imu VinsImuFilter::filterAccelerometer(const sensor_msgs::msg::Imu &imu) {
 
-  sensor_msgs::Imu imu_filtered = imu;
+  sensor_msgs::msg::Imu imu_filtered = imu;
 
   if (_acc_notch_filter_enabled_) {
     for (size_t i = 0; i < acc_notch_filter_vector_.size(); i++) {
@@ -312,9 +341,9 @@ sensor_msgs::Imu VinsImuFilter::filterAccelerometer(const sensor_msgs::Imu &imu)
 /*//}*/
 
 /* filterGyro() */ /*//{*/
-sensor_msgs::Imu VinsImuFilter::filterGyro(const sensor_msgs::Imu &imu) {
+sensor_msgs::msg::Imu VinsImuFilter::filterGyro(const sensor_msgs::msg::Imu &imu) {
 
-  sensor_msgs::Imu imu_filtered = imu;
+  sensor_msgs::msg::Imu imu_filtered = imu;
 
   if (_gyro_notch_filter_enabled_) {
     for (size_t i = 0; i < gyro_notch_filter_vector_.size(); i++) {
@@ -335,5 +364,6 @@ sensor_msgs::Imu VinsImuFilter::filterGyro(const sensor_msgs::Imu &imu) {
 /*//}*/
 
 }  // namespace vins_imu_filter
-/* every nodelet must export its class as nodelet plugin */
-PLUGINLIB_EXPORT_CLASS(vins_imu_filter::VinsImuFilter, nodelet::Nodelet);
+
+#include <rclcpp_components/register_node_macro.hpp>
+RCLCPP_COMPONENTS_REGISTER_NODE(vins_imu_filter::VinsImuFilter);

@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
-<package format="2">
-  
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+
   <name>mrs_vins_imu_filter</name>
   <version>0.1.0</version>
   <description>The mrs_vins_imu_filter package</description>
@@ -10,19 +11,22 @@
 
   <license>BSD 3-Clause</license>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
 
-  <depend>cmake_modules</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
   <depend>geometry_msgs</depend>
-  <depend>mrs_lib</depend>
   <depend>nav_msgs</depend>
-  <depend>nodelet</depend>
-  <depend>roscpp</depend>
+  
   <depend>tf2</depend>
   <depend>tf2_ros</depend>
+  <depend>std_msgs</depend>
+  <depend>mrs_lib</depend>
+  <depend>mrs_uav_testing</depend>
 
   <export>
-    <nodelet plugin="${prefix}/nodelets.xml" />
+    <build_type>ament_cmake</build_type>
   </export>
 
 </package>
