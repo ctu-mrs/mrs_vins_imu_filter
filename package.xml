@@ -3,7 +3,7 @@
 <package format="3">
 
   <name>mrs_vins_imu_filter</name>
-  <version>0.1.0</version>
+  <version>2.0.0</version>
   <description>The mrs_vins_imu_filter package</description>
 
   <author email="bednaj14@fel.cvut.cz">Jan Bednar</author>
@@ -23,7 +23,6 @@
   <depend>tf2_ros</depend>
   <depend>std_msgs</depend>
   <depend>mrs_lib</depend>
-  <depend>mrs_uav_testing</depend>
 
   <export>
     <build_type>ament_cmake</build_type>
