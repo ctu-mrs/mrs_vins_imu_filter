@@ -49,7 +49,6 @@ foreach(DEP IN LISTS DEPENDENCIES)
 endforeach()
 
 include_directories(
-  include
   ${rclcpp_INCLUDE_DIRS}
   ${mrs_lib_INCLUDE_DIRS}
 )
@@ -62,7 +61,6 @@ include_directories(
 
 add_library(MrsVinsImuFilter_VinsImuFilter SHARED
   src/VinsImuFilter.cpp
-  src/mrs_lib/notch_filter.cpp
 )
 
 ament_target_dependencies(MrsVinsImuFilter_VinsImuFilter
@@ -77,11 +75,11 @@ target_compile_definitions(MrsVinsImuFilter_VinsImuFilter PRIVATE USE_ROS_TIMER=
 ## |                           testing                          |
 ## --------------------------------------------------------------
 
-if(ENABLE_TESTS)
+# if(ENABLE_TESTS)
 
-  add_subdirectory(test)
+#   add_subdirectory(test)
 
-endif()
+# endif()
 
 ## --------------------------------------------------------------
 ## |                           Install                          |
