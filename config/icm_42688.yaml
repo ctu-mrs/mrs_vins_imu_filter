@@ -1,3 +1,5 @@
+change_frame_id:
+  enabled: false
 
 accelerometer:
   iir_filter:

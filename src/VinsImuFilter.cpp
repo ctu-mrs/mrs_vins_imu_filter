@@ -165,7 +165,7 @@ void VinsImuFilter::initialize() {
   param_loader.loadMatrixDynamic("gyro/notch_filter/frequencies", _gyro_notch_filter_frequencies_, 1, -1);
   param_loader.loadParam("gyro/notch_filter/bandwidth", _gyro_notch_filter_bandwidth_);
 
-  param_loader.loadParam("change_frame_id/enabled", _change_frame_id_enabled_, false);
+  param_loader.loadParam("change_frame_id/enabled", _change_frame_id_enabled_);
   
   if (_change_frame_id_enabled_) {
     param_loader.loadParam("change_frame_id/target_frame_id", _target_frame_id_);

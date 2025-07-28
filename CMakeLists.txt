@@ -62,6 +62,7 @@ include_directories(
 
 add_library(MrsVinsImuFilter_VinsImuFilter SHARED
   src/VinsImuFilter.cpp
+  src/mrs_lib/notch_filter.cpp
 )
 
 ament_target_dependencies(MrsVinsImuFilter_VinsImuFilter
