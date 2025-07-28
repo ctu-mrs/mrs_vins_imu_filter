@@ -147,6 +147,9 @@ void VinsImuFilter::initialize() {
   RCLCPP_INFO(node_->get_logger(), "[VinsImuFilter]: loading parameters using ParamLoader");
 
   mrs_lib::ParamLoader param_loader(node_, "VinsImuFilter");
+
+  param_loader.addYamlFileFromParam("public_config");
+
   param_loader.loadParam("accelerometer/iir_filter/enable", _acc_iir_filter_enabled_);
   param_loader.loadMatrixDynamic("accelerometer/iir_filter/a", _acc_iir_filter_a_, 1, -1);  // -1 indicates the dynamic dimension
   param_loader.loadMatrixDynamic("accelerometer/iir_filter/b", _acc_iir_filter_b_, 1, -1);
@@ -163,6 +166,7 @@ void VinsImuFilter::initialize() {
   param_loader.loadParam("gyro/notch_filter/bandwidth", _gyro_notch_filter_bandwidth_);
 
   param_loader.loadParam("change_frame_id/enabled", _change_frame_id_enabled_, false);
+  
   if (_change_frame_id_enabled_) {
     param_loader.loadParam("change_frame_id/target_frame_id", _target_frame_id_);
   }
