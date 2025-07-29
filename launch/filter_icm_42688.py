@@ -127,11 +127,11 @@ def generate_launch_description():
 
         remappings=[
             # subscribers
-            ("~/imu_in", "~/vio_imu/imu_raw"),
+            ("~/imu_in", "/imu_raw"),
             ("~/accel_in", "~/accel_in"),
             ("~/gyro_in", "~/gyro_in"),
             # publishers
-            ("~/imu_out", "~/vio_imu/imu_filtered"),
+            ("~/imu_out", "/vio_imu/imu_filtered"),
         ],
     )
 
