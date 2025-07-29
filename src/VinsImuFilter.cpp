@@ -26,7 +26,7 @@
 #include <mrs_lib/attitude_converter.h>
 #include <mrs_lib/msg_extractor.h>
 #include <mrs_lib/iir_filter.h>
-#include "mrs_lib/notch_filter.h"
+#include <mrs_lib/notch_filter.h>
 
 //}
 
