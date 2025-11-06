@@ -141,10 +141,10 @@ void VinsImuFilter::timerPreInitialization() {
 /* initialize() //{ */
 
 void VinsImuFilter::initialize() {
-  RCLCPP_INFO(node_->get_logger(), "[VinsImuFilter]: Initializing");
+  RCLCPP_INFO(node_->get_logger(), "initializing");
 
   // | ---------- loading ros parameters using mrs_lib ---------- |
-  RCLCPP_INFO(node_->get_logger(), "[VinsImuFilter]: loading parameters using ParamLoader");
+  RCLCPP_INFO(node_->get_logger(), "loading parameters using ParamLoader");
 
   mrs_lib::ParamLoader param_loader(node_, "VinsImuFilter");
 
@@ -172,7 +172,7 @@ void VinsImuFilter::initialize() {
   }
 
   if (!param_loader.loadedSuccessfully()) {
-    RCLCPP_ERROR(node_->get_logger(), "[VinsImuFilter]: parameter loading failure");
+    RCLCPP_ERROR(node_->get_logger(), "parameter loading failure");
     rclcpp::shutdown();
     exit(1);
   }
@@ -228,7 +228,7 @@ void VinsImuFilter::initialize() {
 
   is_initialized_ = true;
 
-  RCLCPP_INFO_ONCE(node_->get_logger(), "[VinsImuFilter]: initialized");
+  RCLCPP_INFO_ONCE(node_->get_logger(), "initialized");
 }
 
 //}
@@ -244,7 +244,7 @@ void VinsImuFilter::imuCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu)
   imu_received_ = true;
 
   if (acc_received_ || gyro_received_) {
-    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "[VinsImuFilter]: Receiving IMU messages but also separate acc or gyro messages, check topic remapping.");
+    RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "receiving IMU messages but also separate acc or gyro messages, check topic remapping.");
   }
 
   sensor_msgs::msg::Imu imu_filtered = filterAccelerometer(*imu);
@@ -255,7 +255,7 @@ void VinsImuFilter::imuCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu)
   }
 
 
-  RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "[VinsImuFilter]: Filtering");
+  RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "filtering");
 
   ph_imu_.publish(imu_filtered);
 }
@@ -284,7 +284,7 @@ void VinsImuFilter::accelCallback(const sensor_msgs::msg::Imu::ConstSharedPtr im
     last_accel_msg_ = imu_filtered;
   }
 
-  RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "[VinsImuFilter]: Filtering accelerometer msgs");
+  RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "filtering accelerometer msgs");
 }
 
 //}
@@ -311,7 +311,7 @@ void VinsImuFilter::gyroCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu
     imu_filtered.linear_acceleration = last_accel_msg_.linear_acceleration;
   }
 
-  RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "[VinsImuFilter]: Filtering gyro msgs");
+  RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "filtering gyro msgs");
 
   ph_imu_.publish(imu_filtered);
 }
