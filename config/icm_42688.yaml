@@ -27,6 +27,6 @@ gyro:
     frequencies: [125, 250, 375] # [Hz]
     bandwidth: 100 # [Hz]
 
-skip_spike: true
+skip_spike: false
 gravity: 9.81
 max_accel_factor: 1.5
