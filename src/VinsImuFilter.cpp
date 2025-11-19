@@ -85,6 +85,10 @@ private:
   bool        _change_frame_id_enabled_ = false;
   std::string _target_frame_id_;
 
+  bool _skip_spike_;
+  double _gravity_;
+  double _max_accel_factor_;
+
   // | ------------------------ subscribers --------------------- |
 
   mrs_lib::SubscriberHandler<sensor_msgs::msg::Imu> sh_imu_;
@@ -166,6 +170,10 @@ void VinsImuFilter::initialize() {
   param_loader.loadParam("gyro/notch_filter/bandwidth", _gyro_notch_filter_bandwidth_);
 
   param_loader.loadParam("change_frame_id/enabled", _change_frame_id_enabled_);
+
+  param_loader.loadParam("skip_spike", _skip_spike_);
+  param_loader.loadParam("gravity", _gravity_);
+  param_loader.loadParam("max_accel_factor", _max_accel_factor_);
   
   if (_change_frame_id_enabled_) {
     param_loader.loadParam("change_frame_id/target_frame_id", _target_frame_id_);
@@ -247,13 +255,32 @@ void VinsImuFilter::imuCallback(const sensor_msgs::msg::Imu::ConstSharedPtr imu)
     RCLCPP_WARN_THROTTLE(node_->get_logger(), *clock_, 1000, "receiving IMU messages but also separate acc or gyro messages, check topic remapping.");
   }
 
+  if(_skip_spike_){
+    // Check for acceleration spikes before filtering
+    double accel_magnitude = std::sqrt(
+      imu->linear_acceleration.x * imu->linear_acceleration.x +
+      imu->linear_acceleration.y * imu->linear_acceleration.y +
+      imu->linear_acceleration.z * imu->linear_acceleration.z
+    );
+    
+    const double MAX_ACCEL = _max_accel_factor_ * _gravity_;  // 2G threshold
+    
+    if (accel_magnitude > MAX_ACCEL) {
+      RCLCPP_WARN_THROTTLE(
+        node_->get_logger(), *clock_, 100,
+        "IMU acceleration spike detected: %.2f m/s^2 (threshold: %.2f m/s^2), skipping this measurement",
+        accel_magnitude, MAX_ACCEL
+      );
+      return;  // Skip this entire IMU message
+    }
+  }
+
   sensor_msgs::msg::Imu imu_filtered = filterAccelerometer(*imu);
   imu_filtered                       = filterGyro(imu_filtered);
 
   if (_change_frame_id_enabled_) {
     imu_filtered.header.frame_id = _target_frame_id_;
   }
-
 
   RCLCPP_INFO_THROTTLE(node_->get_logger(), *clock_, 1000, "filtering");
 

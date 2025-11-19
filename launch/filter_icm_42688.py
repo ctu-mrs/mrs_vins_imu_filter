@@ -107,6 +107,8 @@ def generate_launch_description():
 
     ld.add_action(DeclareLaunchArgument(name='log_level', default_value='info'))
 
+    ld.add_action(DeclareLaunchArgument(name='topic_namespace', default_value=''))
+
     # #} end of log_level
 
     # #{ filter_icm_42688 node
@@ -127,12 +129,12 @@ def generate_launch_description():
 
         remappings=[
             # subscribers
-            ("~/imu_in", PathJoinSubstitution(["/", uav_name, "imu_raw"])),
+            ("~/imu_in", PathJoinSubstitution(["/", uav_name, LaunchConfiguration('topic_namespace'), "imu_raw"])),
             #("~/imu_in", "/" + uav_name + "/imu_raw"),
             ("~/accel_in", "~/accel_in"),
             ("~/gyro_in", "~/gyro_in"),
             # publishers
-            ("~/imu_out", PathJoinSubstitution(["/", uav_name, "imu_filtered"])),
+            ("~/imu_out", PathJoinSubstitution(["/", uav_name, LaunchConfiguration('topic_namespace'), "imu_filtered"])),
         ],
     )
 
