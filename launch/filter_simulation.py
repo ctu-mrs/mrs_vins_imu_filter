@@ -36,7 +36,7 @@ def generate_launch_description():
         description="The uav name used for namespacing.",
     ))
 
-    # #} end of custom_config
+    # #} end of uav_name
 
     # #{ standalone
 
@@ -101,7 +101,7 @@ def generate_launch_description():
         description="Should the node subscribe to sim time?",
     ))
 
-    # #} end of custom_config
+    # #} end of use_sim_time
 
     # #{ log_level
 
@@ -161,6 +161,6 @@ def generate_launch_description():
 
     ld.add_action(standalone_container)
 
-    # #} end of own container
+    # #} end of standalone container
 
     return ld
