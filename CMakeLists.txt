@@ -48,11 +48,6 @@ foreach(DEP IN LISTS DEPENDENCIES)
   find_package(${DEP} REQUIRED)
 endforeach()
 
-include_directories(
-  ${rclcpp_INCLUDE_DIRS}
-  ${mrs_lib_INCLUDE_DIRS}
-)
-
 ## --------------------------------------------------------------
 ## |                           Compile                          |
 ## --------------------------------------------------------------
