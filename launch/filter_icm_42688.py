@@ -116,16 +116,16 @@ def generate_launch_description():
     filter_icm_42688_node = ComposableNode(
 
         package=pkg_name,
-        plugin='vins_imu_filter::VinsImuFilter',
+        plugin=namespace+'::VinsImuFilter',
         namespace=uav_name,
-        name='vins_imu_filter',
+        name=namespace,
 
         parameters=[
             {"uav_name": uav_name},
             {"use_sim_time": use_sim_time},
             {'public_config': this_pkg_path + '/config/icm_42688.yaml'},
             {'custom_config': custom_config},
-            ],
+        ],
 
         remappings=[
             # subscribers
