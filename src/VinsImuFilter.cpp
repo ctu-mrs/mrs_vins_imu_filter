@@ -27,6 +27,7 @@
 #include <mrs_lib/msg_extractor.h>
 #include <mrs_lib/iir_filter.h>
 #include <mrs_lib/notch_filter.h>
+#include <mrs_lib/node.h>
 
 //}
 
@@ -49,16 +50,13 @@ struct IirFilterStruct
 
 /* class VinsImuFilter //{ */
 
-class VinsImuFilter : public rclcpp::Node {
+class VinsImuFilter : public mrs_lib::Node {
 public:
   VinsImuFilter(rclcpp::NodeOptions options);
 
 private:
   rclcpp::Node::SharedPtr  node_;
   rclcpp::Clock::SharedPtr clock_;
-
-  rclcpp::TimerBase::SharedPtr timer_preinitialization_;
-  void                         timerPreInitialization();
 
   void initialize();
 
@@ -124,20 +122,10 @@ private:
 
 /* VinsImuFilter() //{ */
 
-VinsImuFilter::VinsImuFilter(rclcpp::NodeOptions options) : Node("VinsImuFilter", options) {
-  timer_preinitialization_ = create_wall_timer(std::chrono::duration<double>(1.0), std::bind(&VinsImuFilter::timerPreInitialization, this));
-}
-
-//}
-
-/* timerPreInitialization() //{ */
-
-void VinsImuFilter::timerPreInitialization() {
-  node_  = this->shared_from_this();
+VinsImuFilter::VinsImuFilter(rclcpp::NodeOptions options) : mrs_lib::Node("VinsImuFilter", options) {
+  node_  = this_node_ptr();
   clock_ = node_->get_clock();
-
   initialize();
-  timer_preinitialization_->cancel();
 }
 
 //}
