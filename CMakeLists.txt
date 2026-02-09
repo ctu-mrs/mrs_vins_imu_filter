@@ -70,10 +70,6 @@ rclcpp_components_register_nodes(MrsVinsImuFilter_VinsImuFilter PLUGIN "vins_imu
 ## |                           Install                          |
 ## --------------------------------------------------------------
 
-ament_export_libraries(
-  ${LIBRARIES}
-)
-
 install(TARGETS ${LIBRARIES}
   EXPORT export_${PROJECT_NAME}
   ARCHIVE DESTINATION lib
