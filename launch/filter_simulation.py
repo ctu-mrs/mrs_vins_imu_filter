@@ -66,31 +66,6 @@ def generate_launch_description():
 
     # #} end of container_name
 
-    # #{ custom_config
-
-    custom_config = LaunchConfiguration('custom_config')
-
-    # this adds the args to the list of args available for this launch files
-    # these args can be listed at runtime using -s flag
-    # default_value is required to if the arg is supposed to be optional at launch time
-    ld.add_action(DeclareLaunchArgument(
-        'custom_config',
-        default_value="",
-        description="Path to the custom configuration file. The path can be absolute, starting with '/' or relative to the current working directory",
-        ))
-
-    # behaviour:
-    #     custom_config == "" => custom_config: ""
-    #     custom_config == "/<path>" => custom_config: "/<path>"
-    #     custom_config == "<path>" => custom_config: "$(pwd)/<path>"
-    custom_config = IfElseSubstitution(
-            condition=PythonExpression(['"', custom_config, '" != "" and ', 'not "', custom_config, '".startswith("/")']),
-            if_value=PathJoinSubstitution([EnvironmentVariable('PWD'), custom_config]),
-            else_value=custom_config
-            )
-
-    # #} end of custom_config
-
     # #{ use_sim_time
 
     use_sim_time = LaunchConfiguration('use_sim_time')
