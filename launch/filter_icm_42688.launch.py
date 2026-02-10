@@ -7,13 +7,7 @@ from launch_ros.actions import ComposableNodeContainer, LoadComposableNodes
 from launch_ros.descriptions import ComposableNode
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import IfCondition, UnlessCondition
-from launch.substitutions import (
-        LaunchConfiguration,
-        IfElseSubstitution,
-        PythonExpression,
-        PathJoinSubstitution,
-        EnvironmentVariable,
-        )
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 
 from ament_index_python.packages import get_package_share_directory
 
@@ -21,7 +15,7 @@ def generate_launch_description():
 
     ld = launch.LaunchDescription()
 
-    pkg_name = "mrs_vins_imu_filter"
+    pkg_name = 'mrs_vins_imu_filter'
 
     this_pkg_path = get_package_share_directory(pkg_name)
     namespace='vins_imu_filter'
@@ -32,8 +26,8 @@ def generate_launch_description():
 
     ld.add_action(DeclareLaunchArgument(
         'uav_name',
-        default_value=os.getenv('UAV_NAME', "uav1"),
-        description="The uav name used for namespacing.",
+        default_value=os.getenv('UAV_NAME', 'uav1'),
+        description='The uav name used for namespacing.',
     ))
 
     # #} end of uav_name
@@ -72,8 +66,8 @@ def generate_launch_description():
 
     ld.add_action(DeclareLaunchArgument(
         'use_sim_time',
-        default_value=os.getenv('USE_SIM_TIME', "false"),
-        description="Should the node subscribe to sim time?",
+        default_value=os.getenv('USE_SIM_TIME', 'false'),
+        description='Should the node subscribe to sim time?',
     ))
 
     # #} end of use_sim_time
@@ -96,20 +90,18 @@ def generate_launch_description():
         name=namespace,
 
         parameters=[
-            {"uav_name": uav_name},
-            {"use_sim_time": use_sim_time},
+            {'uav_name': uav_name},
+            {'use_sim_time': use_sim_time},
             {'public_config': this_pkg_path + '/config/icm_42688.yaml'},
-            {'custom_config': custom_config},
         ],
 
         remappings=[
             # subscribers
-            ("~/imu_in", PathJoinSubstitution(["/", uav_name, LaunchConfiguration('topic_namespace'), "imu_raw"])),
-            #("~/imu_in", "/" + uav_name + "/imu_raw"),
-            ("~/accel_in", "~/accel_in"),
-            ("~/gyro_in", "~/gyro_in"),
+            ('~/imu_in', PathJoinSubstitution(['/', uav_name, LaunchConfiguration('topic_namespace'), 'imu_raw'])),
+            ('~/accel_in', '~/accel_in'),
+            ('~/gyro_in', '~/gyro_in'),
             # publishers
-            ("~/imu_out", PathJoinSubstitution(["/", uav_name, LaunchConfiguration('topic_namespace'), "imu_filtered"])),
+            ('~/imu_out', PathJoinSubstitution(['/', uav_name, LaunchConfiguration('topic_namespace'), 'imu_filtered'])),
         ],
     )
 
@@ -130,7 +122,7 @@ def generate_launch_description():
         name=namespace+'_container',
         package='rclcpp_components',
         executable='component_container_mt',
-        output="screen",
+        output='screen',
         arguments=['--ros-args', '--log-level', LaunchConfiguration('log_level')],
         # prefix=['debug_roslaunch ' + os.ttyname(sys.stdout.fileno())],
         composable_node_descriptions=[filter_icm_42688_node],
