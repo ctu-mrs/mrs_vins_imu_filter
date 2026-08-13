@@ -50,8 +50,15 @@ add_library(MrsVinsImuFilter_VinsImuFilter SHARED
   src/VinsImuFilter.cpp
 )
 
-ament_target_dependencies(MrsVinsImuFilter_VinsImuFilter
-  ${DEPENDENCIES}
+target_link_libraries(MrsVinsImuFilter_VinsImuFilter
+  ${geometry_msgs_TARGETS}
+  mrs_lib::mrs_lib
+  ${nav_msgs_TARGETS}
+  rclcpp::rclcpp
+  rclcpp_components::component
+  ${std_msgs_TARGETS}
+  tf2::tf2
+  tf2_ros::tf2_ros
 )
 
 rclcpp_components_register_nodes(MrsVinsImuFilter_VinsImuFilter PLUGIN "vins_imu_filter::VinsImuFilter" EXECUTABLE MrsVinsImuFilter_VinsImuFilter)
@@ -77,13 +84,7 @@ install(TARGETS ${LIBRARIES}
   RUNTIME DESTINATION bin
 )
 
-install(
-  DIRECTORY launch
-  DESTINATION share/${PROJECT_NAME}
-)
-
-install(
-  DIRECTORY config
+install(DIRECTORY launch config
   DESTINATION share/${PROJECT_NAME}
 )
 
