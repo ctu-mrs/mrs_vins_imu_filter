@@ -3,8 +3,8 @@
 #include <memory>
 #include <rclcpp/rclcpp.hpp>
 
-#include <tf2/LinearMath/Quaternion.h>
-#include <tf2_ros/transform_broadcaster.h>
+#include <tf2/LinearMath/Quaternion.hpp>
+#include <tf2_ros/transform_broadcaster.hpp>
 
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -15,8 +15,8 @@
 #include <std_msgs/msg/string.hpp>
 
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
-#include <tf2_ros/transform_listener.h>
-#include <tf2_ros/static_transform_broadcaster.h>
+#include <tf2_ros/transform_listener.hpp>
+#include <tf2_ros/static_transform_broadcaster.hpp>
 
 #include <mrs_lib/subscriber_handler.h>
 #include <mrs_lib/publisher_handler.h>
